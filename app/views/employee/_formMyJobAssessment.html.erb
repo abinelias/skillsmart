@@ -1,0 +1,187 @@
+<style>
+	.list 
+	{
+		 background:none!important;
+		 border:none; 
+		 padding:0!important;
+		
+		 /*optional*/
+		 color:#0000FF;
+		 cursor:pointer;
+	}
+
+</style>
+
+<style>
+	<% unless(@requiredArray.blank?)%>
+		<% @requiredArray.each do |value| %> 
+			<% if( value['employeeVal'].to_i <  value['skillVal'].to_i) %>
+				#slider-range-min<%= @ct %> .ui-slider-range { background: #FF0000; }
+				#slider-range-min+cnt .ui-slider-handle { border-color: #FF0000; }
+			<% else %>
+			
+				#slider-range-min<%= @ct %> .ui-slider-range { background: #00FF00; }
+				#slider-range-min<%= @ct %> .ui-slider-handle { border-color: #00FF00; }
+			<% end %>
+			<% @ct = @ct + 1 %>
+		<% end %>
+	<% end %>
+	
+	<% unless(@desiredArray.blank?)%>
+		<% @desiredArray.each do |value| %> 
+			<% if( value['employeeVal'].to_i <  value['skillVal'].to_i) %>
+				#slider-range-min<%= @ct %> .ui-slider-range { background: #FF0000; }
+				#slider-range-min+cnt .ui-slider-handle { border-color: #FF0000; }
+			<% else %>
+			
+				#slider-range-min<%= @ct %> .ui-slider-range { background: #00FF00; }
+				#slider-range-min<%= @ct %> .ui-slider-handle { border-color: #00FF00; }
+			<% end %>
+			<% @ct = @ct + 1 %>
+		<% end %>
+	<% end %>			
+</style>
+
+<meta charset="utf-8" />
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script>
+	$(function() 
+	{
+		<% unless(@requiredArray.blank?)%>
+			<% @requiredArray.each do |value| %>  
+				var cnt	=	<%= @count %>
+					$( "#slider-range-min"+cnt).slider ( 
+						{
+							disabled:true,
+							range: "min",
+							value: $("#amount"+cnt).val(),
+							min: 1,
+							max: 10,
+							slide: function( event, ui ) 
+							{
+								$( ".amount" ).val(  ui.value );
+							}							
+						});
+				<% @count = @count + 1 %>
+			<% end %>
+		<% end %>	
+		
+		<% unless(@desiredArray.blank?)%>
+			<% @desiredArray.each do |value| %>  
+				var cnt	=	<%= @count %>
+					$( "#slider-range-min"+cnt).slider ( 
+						{
+							disabled:true,
+							range: "min",
+							value: $("#amount"+cnt).val(),
+							min: 1,
+							max: 10,
+							slide: function( event, ui ) 
+							{
+								$( ".amount" ).val(  ui.value );
+							}
+						});
+				<% @count = @count + 1 %>
+			<% end %>
+		<% end %>	
+	});
+</script>
+
+
+<script>
+	$(document).ready(function(){
+		$("button").click(function() {
+		    var jobID 		 		 = 		document.getElementById("jobID");
+			var jobIDVal 		 	 = 		jobID.value;	
+			var candidateID	 		 = 		document.getElementById("candidateID");
+			var candidateIDVal	 	 = 		candidateID.value;	
+			$.ajax({ 
+				  type: 'GET', 
+				  url: '/jobseeker/applyJob', 
+				  data: {'jobID' : jobIDVal, 'candidateID' : candidateIDVal},
+				  success: function(data) 
+				  {
+						alert("Applied for the job")
+				  } 
+			  });
+				
+		});
+	});	
+</script>
+<div align ="left">
+	<div style="text-align:center;">
+		<div style="text-align:left;">
+			<table align ="center" class ="serifa" >
+				<input type = "hidden" name = "jobIDVal" id = "jobID" value = <%= @jobID %> >
+				<input type = "hidden" name = "candidateIDVal" id = "candidateID" value = <%= session[:userid] %> >
+				<tr>
+					<td>Job:</td><td><%= @jobDesc %> <td>
+				</tr>
+				<tr>
+					<td>Company Name: </td><td><%= @companyName %> <td>
+				</tr>
+				<tr>
+					<td>Location:</td><td> <%= @companyCity %>, <%= @companyState %> <td>
+				</tr>
+				<tr>
+					<td><% if(@display == "1") %><%= link_to "Add To Watched Jobs" , {:controller => "employee", :action => "watchedJobs", :jobID => @jobID  }%> <% else %> Add To Watched Jobs <% end %> | 
+					<% if(@display == "1") %><%= link_to "Apply For Job", {:controller => "employee", :action => "popupApplyJob", :jobID => @jobID  },  :onclick=>"window.open(this.href,'popupApplyJob', 'height=350,width=800,top=250,left=300' ); return false;" %><% else %> Apply For Job <% end %></td> 
+				</tr>	
+			</table>
+		</div>
+		<table width="100%" style="margin-left:1px;">	
+		
+
+			<% unless(@requiredArray.blank?)%>
+				<tr>
+					<td align ="left"> Required Skills</td>
+					<td>My Proficiency</td>
+					<td></td>
+					<td>Required Proficiency</td>
+				</tr> 
+				<% @requiredArray.each do |value| %>  
+					<tr>
+						<td align ="left" style="padding-left:20px;width:350px;" ><%= value['reqSkills'].to_s  %></td>
+						<td><%= value['employeeVal'].to_s  %></td>
+						<td style="width:200px;" ><div id="slider-range-min<%= @cont %>" style="color:#FF6600;"></div></td>
+						<td><input type = "hidden" id = "amount<%= @cont %>" value =<%= value['skillVal'].to_i %>
+						<td><%= value['skillVal'].to_s  %></td>
+						<td style="width:130px;"> <%= link_to "Build My Skills"  , url_for({:controller => 'employee', :action => 'courseDetails' , :course => value['reqSkillID'].to_s }) %> </td>	   
+					</tr>
+					<% @cont = @cont + 1 %>
+				<% end %>
+			<% end %>	
+			
+			<% unless(@desiredArray.blank?)%>
+				<tr>
+					<td align ="left"> Desired Skills</td>
+				</tr> 
+				<% @desiredArray.each do |value| %>  
+					<tr>
+						<td align ="left" style="padding-left:20px;width:350px;" ><%= value['desSkills'].to_s  %></td>
+						<td><%= value['employeeVal'].to_s  %></td>
+						<td style="width:200px;" ><div id="slider-range-min<%= @cont %>" style="color: #FF6600;"></div></td>
+						<td><input type = "hidden" id = "amount<%= @cont %>" value =<%= value['skillVal'].to_i %>						
+						<td><%= value['skillVal'].to_s  %></td>
+						<td style="width:130px;"> <%= link_to "Build My Skills"  , url_for({:controller => 'employee', :action => 'courseDetails' , :course => value['desSkillID'].to_s }) %> </td>	   
+					</tr>
+					<% @cont = @cont + 1 %>
+				<% end %>
+			<% end %>	
+			<% unless(@prerequisiteArray.blank?)%>
+					<tr>
+						<td align ="left"> Employer Prerequisite</td>
+					</tr>  
+					
+				<% @prerequisiteArray.each do |value| %>	
+					<tr>
+						<td align ="left" style="padding-left:20px;width:350px;" ><%= value['prequisite'].to_s  %></td>
+						<td style="width:200px;" ><div class="slider-range-min" style="color: #FF6600;"></div></td>
+					</tr>
+				<% end %>
+			<% end %>
+		</table>
+	</div>
+</div>
